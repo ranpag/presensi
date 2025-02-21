@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Http\Requests\Mapel;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreMapelRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'nama' => 'required|string|max:50|unique:mapel,nama',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'nama.required' => 'Nama mata pelajaran wajib diisi.',
+            'nama.string' => 'Nama mata pelajaran harus berupa teks.',
+            'nama.max' => 'Nama mata pelajaran maksimal 50 karakter.',
+            'nama.unique' => 'Nama mata pelajaran sudah terdaftar, gunakan nama lain.',
+        ];
+    }
+}
