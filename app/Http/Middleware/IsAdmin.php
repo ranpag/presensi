@@ -15,6 +15,23 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Pastikan user sudah login
+        if (!auth('api')->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Please login first.'
+            ], 401);
+        }
+
+        // Cek apakah user memiliki role admin
+        $user = auth('api')->user();
+        if ($user->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden. You do not have admin access.'
+            ], 403);
+        }
+
         return $next($request);
     }
 }

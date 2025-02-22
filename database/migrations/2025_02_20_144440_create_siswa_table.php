@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('walimurid', 100);
             $table->string('alamat', 100);
             $table->foreignId('kelas_id')->nullable()->constrained('kelas', 'id')->nullOnDelete()->cascadeOnUpdate();
-            $table->timestamps();
         });
     }
 

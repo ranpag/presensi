@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('nama', 50);
             $table->enum('tingkatan', [7, 8, 9]);
             $table->foreignId('user_id')->nullable()->constrained('users', 'id')->nullOnDelete()->cascadeOnUpdate();
-            $table->timestamps();
         });
     }
 

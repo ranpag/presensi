@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Jadwal;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdateKbmRequest extends FormRequest
 {
@@ -37,5 +39,14 @@ class UpdateKbmRequest extends FormRequest
             'selesai.date_format' => 'Format waktu selesai harus HH:MM (contoh: 16:00).',
             'selesai.after' => 'Waktu selesai harus setelah waktu mulai.',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'message' => 'Validation Error',
+            'errors' => $validator->errors()
+        ], 400));
     }
 }

@@ -16,11 +16,8 @@ return new class extends Migration
             $table->string('nama', 100)->fullText('nama_fulltext');
             $table->string('username', 50)->unique();
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['Admin', 'user'])->default('user');
-            $table->rememberToken();
-            $table->timestamps();
+            $table->enum('role', ['admin', 'user'])->default('user');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

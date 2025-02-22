@@ -4,6 +4,8 @@ namespace App\Http\Requests\User;
 
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreUserRequest extends FormRequest
 {
@@ -23,7 +25,7 @@ class StoreUserRequest extends FormRequest
                 'string',
                 Password::min(8)->letters()->numbers()->mixedCase()->symbols(),
             ],
-            'role' => 'required|in:Admin,user',
+            'role' => 'required|in:admin,user',
         ];
     }
 
@@ -54,5 +56,14 @@ class StoreUserRequest extends FormRequest
             'role.required' => 'Role wajib dipilih.',
             'role.in' => 'Role harus salah satu dari: Admin atau user.',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'message' => 'Validation Error',
+            'errors' => $validator->errors()
+        ], 400));
     }
 }
