@@ -18,7 +18,7 @@ class UpdateSiswaRequest extends FormRequest
         return [
             'nama' => 'string|max:100',
             'gender' => 'in:L,P',
-            'nis' => 'string|max:20|unique:siswa,nis',
+            'nis' => 'string|max:20|unique:siswa,nis,' . $this->route('id'),
             'no_telp' => 'string|max:16|regex:/^[0-9]+$/',
             'walimurid' => 'string|max:100',
             'alamat' => 'string|max:100',

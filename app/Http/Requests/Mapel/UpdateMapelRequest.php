@@ -16,7 +16,7 @@ class UpdateMapelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nama' => 'string|max:50|unique:mapel,nama',
+            'nama' => 'string|max:50|unique:mapel,nama,' . $this->route('id'),
         ];
     }
 

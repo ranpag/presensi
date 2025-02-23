@@ -18,8 +18,8 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'nama' => 'string|max:100',
-            'username' => 'string|max:50|unique:users,username',
-            'email' => 'email|unique:users,email',
+            'username' => 'string|max:50|unique:users,username,' . $this->route('id'),
+            'email' => 'email|unique:users,email,' . $this->route('id'),
             'password' => [
                 'string',
                 Password::min(8)->letters()->numbers()->mixedCase()->symbols(),

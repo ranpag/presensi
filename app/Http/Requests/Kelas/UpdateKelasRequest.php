@@ -16,7 +16,7 @@ class UpdateKelasRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nama' => 'string|max:50|unique:kelas,nama',
+            'nama' => 'string|max:50|unique:kelas,nama,' . $this->route('id'),
             'tingkatan' => 'in:7,8,9',
             'user_id' => 'nullable|exists:users,id',
         ];

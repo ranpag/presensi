@@ -20,5 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
             ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (Throwable $exception) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada server.',
+                'error' => $exception->getMessage(),
+                'stack' => config('app.debug') ? $exception->getTrace() : [],
+            ], 500);
+        });
     })->create();

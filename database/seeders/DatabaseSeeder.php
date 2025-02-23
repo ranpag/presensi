@@ -78,8 +78,8 @@ class DatabaseSeeder extends Seeder
         $jadwal = [];
         $hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
         for ($i = 0; $i < 6; $i++) {
-            $jadwal[] = ['kelas_id' => 1, 'mapel_id' => 1, 'user_id' => 1, 'hari' => $hari[$i], 'mulai' => '08:00:00', 'selesai' => '09:30:00'];
-            $jadwal[] = ['kelas_id' => 2, 'mapel_id' => 2, 'user_id' => 2, 'hari' => $hari[$i], 'mulai' => '10:00:00', 'selesai' => '11:30:00'];
+            $jadwal[] = ['kelas_id' => 1, 'mapel_id' => 1, 'user_id' => 3, 'hari' => $hari[$i], 'mulai' => '08:00:00', 'selesai' => '09:30:00'];
+            $jadwal[] = ['kelas_id' => 2, 'mapel_id' => 2, 'user_id' => 5, 'hari' => $hari[$i], 'mulai' => '10:00:00', 'selesai' => '11:30:00'];
         }
 
         DB::table('jadwal_kbm')->insert($jadwal);
