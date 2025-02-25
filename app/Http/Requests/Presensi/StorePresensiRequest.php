@@ -3,39 +3,43 @@
 namespace App\Http\Requests\Presensi;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StorePresensiRequest extends FormRequest
 {
-    public function authorize(): bool
+     public function authorize()
     {
-        return true;
+        return true; // Pastikan diatur ke true agar request bisa dieksekusi
     }
 
-    public function rules(): array
+    public function rules()
     {
         return [
-            'siswa_id' => 'nullable|exists:siswa,id',
-            'tanggal' => 'required|date',
-            'kehadiran' => 'required|in:Hadir,Sakit,Izin,Alfa,Belum',
-            'kelas_id' => 'nullable|exists:kelas,id',
-            'jadwal_id' => 'nullable|exists:jadwal_kbm,id',
-            'mapel_id' => 'nullable|exists:mapel,id',
+            '*.presensi_id' => 'required|exists:presensi,id',
+            '*.siswa_id' => 'required|exists:siswa,id',
+            '*.status' => 'required|in:Hadir,Sakit,Izin,Alfa',
         ];
     }
 
-    public function messages(): array
+    public function messages()
     {
         return [
-            'siswa_id.exists' => 'Siswa yang dipilih tidak ditemukan dalam database.',
-            'tanggal.required' => 'Tanggal wajib diisi.',
-            'tanggal.date' => 'Tanggal harus dalam format yang valid (YYYY-MM-DD).',
-            
-            'kehadiran.required' => 'Status kehadiran wajib dipilih.',
-            'kehadiran.in' => 'Status kehadiran harus salah satu dari: Hadir, Sakit, Izin, Alfa, Belum.',
-
-            'kelas_id.exists' => 'Kelas yang dipilih tidak ditemukan dalam database.',
-            'jadwal_id.exists' => 'Jadwal yang dipilih tidak ditemukan dalam database.',
-            'mapel_id.exists' => 'Mata pelajaran yang dipilih tidak ditemukan dalam database.',
+            '*.presensi_id.required' => 'ID presensi harus diisi.',
+            '*.presensi_id.exists' => 'Presensi tidak ditemukan.',
+            '*.siswa_id.required' => 'ID siswa harus diisi.',
+            '*.siswa_id.exists' => 'Siswa tidak ditemukan.',
+            '*.status.required' => 'Status presensi harus diisi.',
+            '*.status.in' => 'Status hanya boleh: Hadir, Sakit, Izin, atau Alfa.',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'message' => 'Validation Error',
+            'errors' => $validator->errors()
+        ], 400));
     }
 }

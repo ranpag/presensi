@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Presensi;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdatePresensiRequest extends FormRequest
 {
@@ -16,7 +18,7 @@ class UpdatePresensiRequest extends FormRequest
         return [
             'siswa_id' => 'nullable|exists:siswa,id',
             'tanggal' => 'required|date',
-            'kehadiran' => 'required|in:Hadir,Sakit,Izin,Alfa,Belum',
+            'kehadiran' => 'required|in:Hadir,Sakit,Izin,Alfa',
             'kelas_id' => 'nullable|exists:kelas,id',
             'jadwal_id' => 'nullable|exists:jadwal_kbm,id',
             'mapel_id' => 'nullable|exists:mapel,id',
@@ -31,11 +33,20 @@ class UpdatePresensiRequest extends FormRequest
             'tanggal.date' => 'Tanggal harus dalam format yang valid (YYYY-MM-DD).',
             
             'kehadiran.required' => 'Status kehadiran wajib dipilih.',
-            'kehadiran.in' => 'Status kehadiran harus salah satu dari: Hadir, Sakit, Izin, Alfa, Belum.',
+            'kehadiran.in' => 'Status kehadiran harus salah satu dari: Hadir, Sakit, Izin, Alfa.',
 
             'kelas_id.exists' => 'Kelas yang dipilih tidak ditemukan dalam database.',
             'jadwal_id.exists' => 'Jadwal yang dipilih tidak ditemukan dalam database.',
             'mapel_id.exists' => 'Mata pelajaran yang dipilih tidak ditemukan dalam database.',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'message' => 'Validation Error',
+            'errors' => $validator->errors()
+        ], 400));
     }
 }
