@@ -17,7 +17,6 @@ class StorePresensiRequest extends FormRequest
     {
         return [
             '*.presensi_id' => 'required|exists:presensi,id',
-            '*.siswa_id' => 'required|exists:siswa,id',
             '*.status' => 'required|in:Hadir,Sakit,Izin,Alfa',
         ];
     }
@@ -27,8 +26,6 @@ class StorePresensiRequest extends FormRequest
         return [
             '*.presensi_id.required' => 'ID presensi harus diisi.',
             '*.presensi_id.exists' => 'Presensi tidak ditemukan.',
-            '*.siswa_id.required' => 'ID siswa harus diisi.',
-            '*.siswa_id.exists' => 'Siswa tidak ditemukan.',
             '*.status.required' => 'Status presensi harus diisi.',
             '*.status.in' => 'Status hanya boleh: Hadir, Sakit, Izin, atau Alfa.',
         ];

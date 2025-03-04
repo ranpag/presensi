@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\SiswaAlfa;
 use Carbon\Carbon;
 use App\Models\Presensi;
 use Illuminate\Http\Request;
@@ -114,16 +115,24 @@ class PresensiController extends Controller
         }
         $caseQuery .= "END";
 
-        DB::transaction(function () use ($updateData, $caseQuery) {
+        $updatedPresensi = DB::transaction(function () use ($updateData, $caseQuery) {
+            // Update data presensi
             DB::table('presensi')
                 ->whereIn('id', $updateData->keys())
                 ->update(['kehadiran' => DB::raw($caseQuery), 'updated_at' => now('Asia/Jakarta')]);
+
+            // Ambil data yang memiliki kehadiran "Alfa"
+            return Presensi::with(['siswa', 'kelas', 'mapel'])
+                ->whereIn('id', $updateData->keys())
+                ->where('kehadiran', 'Alfa')
+                ->get();
         });
+
+        broadcast(new SiswaAlfa($updatedPresensi))->toOthers();
         
         return response()->json([
             'success' => true,
             'message' => 'Presensi berhasil diperbarui.',
-            'data' => PresensiService::getPresensiSaatIni(auth('api')->id())
         ]);
     }
 

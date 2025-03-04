@@ -36,6 +36,6 @@ class AppServiceProvider extends ServiceProvider
         // Ambil perintah Artisan yang dijalankan
         $command = $_SERVER['argv'][1];
 
-        return in_array($command, ['serve', 'ser']);
+        return in_array($command, ['serve', 'ser', 'srv']);
     }
 }
