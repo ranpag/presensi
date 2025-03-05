@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('no_telp', 16);
             $table->string('walimurid', 100);
             $table->string('alamat', 100);
+            $table->integer('stack_alfa_hari')->default(0);
+            $table->date('last_alfa_update')->nullable();
             $table->foreignId('kelas_id')->nullable()->constrained('kelas', 'id')->nullOnDelete()->cascadeOnUpdate();
         });
     }

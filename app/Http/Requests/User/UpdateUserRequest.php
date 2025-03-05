@@ -24,7 +24,7 @@ class UpdateUserRequest extends FormRequest
                 'string',
                 Password::min(8)->letters()->numbers()->mixedCase()->symbols(),
             ],
-            'role' => 'in:Admin,user',
+            'role' => 'in:admin,user',
         ];
     }
 
@@ -48,7 +48,7 @@ class UpdateUserRequest extends FormRequest
             'password.mixedCase' => 'Password harus memiliki huruf besar dan kecil.',
             'password.symbols' => 'Password harus mengandung setidaknya satu simbol.',
 
-            'role.in' => 'Role harus salah satu dari: Admin atau user.',
+            'role.in' => 'Role harus salah satu dari: admin atau user.',
         ];
     }
 

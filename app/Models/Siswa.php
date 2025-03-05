@@ -20,6 +20,8 @@ class Siswa extends Model
         'no_telp',
         'walimurid',
         'alamat',
+        'stack_alfa_hari',
+        'last_alfa_update',
         'kelas_id',
     ];
 
@@ -31,5 +33,10 @@ class Siswa extends Model
     public function kelas(): BelongsTo
     {
         return $this->belongsTo(Kelas::class, 'kelas_id');
+    }
+
+    public function stackAlfaMapel(): HasMany
+    {
+        return $this->hasMany(SiswaMapelStack::class, 'siswa_id');
     }
 }

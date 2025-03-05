@@ -10,6 +10,7 @@ use App\Http\Controllers\MapelController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TanggalMerahController;
+use App\Http\Controllers\UserController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
@@ -18,6 +19,19 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth.api')->group(function () {
+    Route::prefix('user')->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::get('/{id}', [UserController::class, 'show']);
+    
+        Route::middleware('admin')->group(function () {
+            Route::post('/', [UserController::class, 'store']);
+            Route::put('/{id}', [UserController::class, 'update']);
+            Route::patch('/{id}', [UserController::class, 'update']);
+            Route::delete('/destroy/many', [UserController::class, 'destroyMany']);
+            Route::delete('/{id}', [UserController::class, 'destroy']);
+        });
+    });
+
     Route::prefix('mapel')->group(function () {
         Route::get('/', [MapelController::class, 'index']);
         Route::get('/{id}', [MapelController::class, 'show']);
@@ -72,8 +86,8 @@ Route::middleware('auth.api')->group(function () {
     
     
     Route::prefix('jadwal')->group(function () {
-        Route::get('/hari', [JadwalController::class, 'hari']);
-        Route::get('/minggu', [JadwalController::class, 'minggu']);
+        Route::get('/hari-ini', [JadwalController::class, 'hari']);
+        Route::get('/minggu-ini', [JadwalController::class, 'minggu']);
 
         Route::prefix('kbm')->group(function () {
             Route::get('/', [JadwalKBMController::class, 'index']);

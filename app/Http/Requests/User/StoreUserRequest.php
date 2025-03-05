@@ -54,7 +54,7 @@ class StoreUserRequest extends FormRequest
             'password.symbols' => 'Password harus mengandung setidaknya satu simbol.',
 
             'role.required' => 'Role wajib dipilih.',
-            'role.in' => 'Role harus salah satu dari: Admin atau user.',
+            'role.in' => 'Role harus salah satu dari: admin atau user.',
         ];
     }
 
