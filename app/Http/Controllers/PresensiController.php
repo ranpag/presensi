@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\SiswaMapelStack;
 use App\Services\PresensiService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Requests\Presensi\StorePresensiRequest;
 use App\Http\Requests\Presensi\UpdatePresensiRequest;
 
@@ -109,6 +110,7 @@ class PresensiController extends Controller
         });
 
         $updatedPresensi = DB::transaction(function () use ($updateData) {
+            $presensiLama = Presensi::whereIn('id', $updateData->keys())->get()->keyBy('id');
             // 1️⃣ **Batch Update Presensi**
             $caseQuery = "CASE id ";
             foreach ($updateData as $id => $data) {
@@ -127,13 +129,13 @@ class PresensiController extends Controller
 
             // 3️⃣ **Hitung total Alfa per siswa & per mapel**
             $siswaAlfaHariIni = Presensi::where('kehadiran', 'Alfa')
-                ->whereDate('created_at', today('Asia/Jakarta'))
+                ->whereDate('created_at', today('Asia/Jakarta')->toDateString())
                 ->whereIn('siswa_id', $siswaIds)
                 ->select('siswa_id', DB::raw('COUNT(*) as total_alfa'))
                 ->groupBy('siswa_id')
                 ->pluck('total_alfa', 'siswa_id');
 
-            $totalJadwalPerSiswa = Presensi::whereDate('created_at', today('Asia/Jakarta'))
+            $totalJadwalPerSiswa = Presensi::whereDate('created_at', today('Asia/Jakarta')->toDateString())
                 ->whereIn('siswa_id', $siswaIds)
                 ->select('siswa_id', DB::raw('COUNT(*) as total_jadwal'))
                 ->groupBy('siswa_id')
@@ -141,7 +143,7 @@ class PresensiController extends Controller
 
             // 4️⃣ **Hitung Alfa Per Mapel Per Siswa**
             $siswaAlfaPerMapel = Presensi::where('kehadiran', 'Alfa')
-                ->whereDate('created_at', today('Asia/Jakarta'))
+                ->whereDate('created_at', today('Asia/Jakarta')->toDateString())
                 ->whereIn('siswa_id', $siswaIds)
                 ->select('siswa_id', 'mapel_id')
                 ->groupBy('siswa_id', 'mapel_id')
@@ -157,51 +159,98 @@ class PresensiController extends Controller
 
                 // 🟢 **Tambah Stack Alfa Harian Jika Tidak Masuk Sama Sekali**
                 if ($totalAlfa == $totalJadwal && $totalJadwal > 0) {
-                    if (!$siswa->last_alfa_update || $siswa->last_alfa_update != today('Asia/Jakarta')) {
+                    if (!$siswa->last_alfa_update || $siswa->last_alfa_update != today('Asia/Jakarta')->toDateString()) {
                         $siswa->increment('stack_alfa_hari');
                         $siswa->update(['last_alfa_update' => today('Asia/Jakarta')]);
                     }
                 }
             }
 
-            // 🔵 **Tambah Stack Alfa Per Mapel Sesuai Jumlah Jadwal yang Dilewatkan**
-            foreach ($siswaAlfaPerMapel as $data) 
-            {
-                $stackAlfaMapel = SiswaMapelStack::firstOrNew([
-                    'siswa_id' => $data->siswa_id,
-                    'mapel_id' => $data->mapel_id
-                ]);
+            // 7️⃣ **Kurangi Stack Alfa Harian Jika Kehadiran Diperbarui**
+            foreach ($siswaIds as $siswaId) {
+                $siswa = Siswa::find($siswaId);
+                if (!$siswa) continue;
 
-                // Cek apakah hari ini sudah ada stack untuk mapel ini
-                if (!$stackAlfaMapel->last_alfa_update || $stackAlfaMapel->last_alfa_update != today('Asia/Jakarta')) {
-                    // Jika belum ada update hari ini, tambahkan stack 
-                    $stackAlfaMapel->increment('stack_alfa');
-                    $stackAlfaMapel->last_alfa_update = today('Asia/Jakarta');
-                    $stackAlfaMapel->save();
-                } else {
-                    // Jika sudah ada update hari ini, cek apakah ada jadwal dengan mapel yang sama 
-                    $totalJadwalMapelHariIni = Presensi::where('kehadiran', 'Alfa')
-                        ->whereDate('created_at', today('Asia/Jakarta'))
-                        ->where('siswa_id', $data->siswa_id)
-                        ->where('mapel_id', $data->mapel_id)
-                        ->count();
+                $totalJadwal = $totalJadwalPerSiswa[$siswaId] ?? 0;
+                $totalAlfa = Presensi::where('kehadiran', 'Alfa')
+                    ->whereDate('created_at', today('Asia/Jakarta')->toDateString())
+                    ->where('siswa_id', $siswaId)
+                    ->count();
 
-                    // Cek jumlah Alfa yang sudah dicatat di stack hari ini
-                    $stackHariIni = $stackAlfaMapel->stack_alfa - SiswaMapelStack::where('siswa_id', $data->siswa_id)
-                        ->where('mapel_id', $data->mapel_id)
-                        ->whereDate('last_alfa_update', today('Asia/Jakarta'))
-                        ->value('stack_alfa');
+                // 🟢 **Cek apakah siswa sebelumnya dianggap 100% Alfa hari ini**
+                $sebelumnyaAlfaPenuh = $siswa->last_alfa_update == today('Asia/Jakarta')->toDateString();
 
-                    // Jika ada jadwal baru di hari ini yang belum dihitung dalam stack
-                    if ($totalJadwalMapelHariIni > $stackHariIni) {
-                        $stackAlfaMapel->increment('stack_alfa');
-                        $stackAlfaMapel->save();
+                // ✅ **Jika tadinya Alfa 100% lalu ada perubahan (tidak Alfa 100%) -> Kurangi Stack**
+                if ($sebelumnyaAlfaPenuh && $totalAlfa < $totalJadwal) {
+                    $siswa->decrement('stack_alfa_hari');
+                    
+                    // Hapus penanda jika tidak ada stack tersisa
+                    if ($siswa->stack_alfa_hari == 0) {
+                        $siswa->update(['last_alfa_update' => null]);
                     }
+                }
+
+                // 🔄 **Jika tadinya tidak Alfa 100% lalu menjadi Alfa 100% lagi -> Tambah Stack**
+                if (!$sebelumnyaAlfaPenuh && $totalAlfa == $totalJadwal && $totalJadwal > 0) {
+                    $siswa->increment('stack_alfa_hari');
+                    $siswa->update(['last_alfa_update' => today('Asia/Jakarta')]);
                 }
             }
 
 
-            // 6️⃣ **Ambil Data yang Diperbarui untuk Broadcast**
+
+            // 🔵 **Tambah Stack Alfa Per Mapel Sesuai Jumlah Jadwal yang Dilewatkan**
+            foreach ($siswaAlfaPerMapel as $data) {
+                $stackAlfaMapel = SiswaMapelStack::firstOrCreate([
+                    'siswa_id' => $data->siswa_id,
+                    'mapel_id' => $data->mapel_id
+                ], [
+                    'stack_alfa' => 0, 
+                    'stack_harian' => 0,
+                ]);
+
+
+                // Ambil jumlah jadwal Alfa unik untuk mapel ini hari ini
+                $totalJadwalMapelHariIni = Presensi::where('kehadiran', 'Alfa')
+                    ->whereDate('created_at', today('Asia/Jakarta'))
+                    ->where('siswa_id', $data->siswa_id)
+                    ->where('mapel_id', $data->mapel_id)
+                    ->distinct('jadwal_id') // Hanya menghitung jadwal unik
+                    ->count();
+
+                // Jika ini adalah hari baru, reset stack_harian
+                if (!$stackAlfaMapel->last_alfa_update || $stackAlfaMapel->last_alfa_update != today('Asia/Jakarta')->toDateString()) {
+                    $stackAlfaMapel->update([
+                        'stack_harian' => 0, 
+                        'last_alfa_update' => today('Asia/Jakarta')
+                    ]);
+                }
+
+                // Jika stack_harian belum mencapai batas jadwal unik hari ini, tambahkan stack
+                if ($stackAlfaMapel->stack_harian < $totalJadwalMapelHariIni) {
+                    // Update dengan cara yang lebih pasti
+                    $stackAlfaMapel->increment('stack_alfa');
+                    $stackAlfaMapel->increment('stack_harian');
+
+                    $stackAlfaMapel->refresh(); // Pastikan objek diperbarui dari database
+                }
+            }
+
+            foreach ($updateData as $id => $data) {
+                $presensiSebelumnya = $presensiLama[$id] ?? null;
+                
+                if ($presensiSebelumnya && $presensiSebelumnya->kehadiran === 'Alfa' && $data['kehadiran'] === 'Hadir') {
+                    $stackAlfaMapel = SiswaMapelStack::where('siswa_id', $presensiSebelumnya->siswa_id)
+                        ->where('mapel_id', $presensiSebelumnya->mapel_id)
+                        ->first();
+
+                    if ($stackAlfaMapel && $stackAlfaMapel->stack_alfa > 0) {
+                        $stackAlfaMapel->decrement('stack_alfa');
+                        $stackAlfaMapel->decrement('stack_harian');
+                    }
+                }
+            }
+
             return Presensi::with(['siswa', 'kelas', 'mapel'])
                 ->whereIn('id', $updateData->keys())
                 ->where('kehadiran', 'Alfa')

@@ -11,11 +11,13 @@ class SiswaMapelStack extends Model
     use HasFactory;
 
     protected $table = 'siswa_mapel_stack';
+    public $timestamps = false;
 
     protected $fillable = [
         'siswa_id',
         'mapel_id',
         'stack_alfa',
+        'stack_harian',
         'last_alfa_update',
     ];
 

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('siswa_id')->constrained('siswa')->onDelete('cascade');
             $table->foreignId('mapel_id')->constrained('mapel')->onDelete('cascade');
             $table->integer('stack_alfa')->default(0);
+            $table->integer('stack_harian')->default(0);
             $table->date('last_alfa_update')->nullable();
         });
     }

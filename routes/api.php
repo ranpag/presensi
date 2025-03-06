@@ -60,7 +60,10 @@ Route::middleware('auth.api')->group(function () {
     
     Route::prefix('siswa')->group(function () {
         Route::get('/', [SiswaController::class, 'index']);
+        Route::get('/kelas', [SiswaController::class, 'siswa_kelas_saya']); // Siswa sesuai wali kelas
+        Route::get('/kelas/terperingat', [SiswaController::class, 'siswa_kelas_terperingat']); // Siswa sesuai wali kelas dan yang stack alfanya lebih dari 3
         Route::get('/{id}', [SiswaController::class, 'show']);
+        Route::get('/{id}/surat/sanksi', [SiswaController::class, 'buat_surat_siswa']); // Siswa yang akan di download suratnya
     
         Route::middleware('admin')->group(function () {
             Route::post('/', [SiswaController::class, 'store']);

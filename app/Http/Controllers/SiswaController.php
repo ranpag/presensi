@@ -4,12 +4,69 @@ namespace App\Http\Controllers;
 
 use App\Models\Siswa;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Siswa\StoreSiswaRequest;
 use App\Http\Requests\Siswa\UpdateSiswaRequest;
 
 class SiswaController extends Controller
 {
+    public function siswa_kelas_saya()
+    {
+        $user_id = auth('api')->id();
+
+        $siswa = Siswa::whereHas('kelas', function ($query) use ($user_id) {
+            $query->where('user_id', $user_id);
+        })->get();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data siswa berhasil diambil.',
+            'data' => $siswa
+        ]);
+    }
+
+    public function siswa_kelas_terperingat()
+    {
+        $user_id = auth('api')->id();
+
+        $siswa = Siswa::with(['kelas', 'stackAlfaMapel' => function ($query) {
+            $query->where('stack_alfa', '>=', 3);
+        }])->whereHas('kelas', function ($query) use ($user_id) {
+            $query->where('user_id', $user_id);
+        })->where(function ($query) {
+            $query->where('stack_alfa_hari', '>=', 3)
+                ->orWhereHas('stackAlfaMapel', function ($query) {
+                    $query->where('stack_alfa', '>=', 3);
+                });
+        })->get();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data siswa yang alfanya lebih dari 3 berhasil diambil.',
+            'data' => $siswa
+        ]);
+    }
+
+    public function buat_surat_siswa()
+    {
+        $data = [
+            'title' => 'Laporan Penjualan',
+            'date' => now()->format('d-m-Y'),
+            'items' => [
+                ['name' => 'Produk A', 'price' => 1000],
+                ['name' => 'Produk B', 'price' => 75000],
+                ['name' => 'Produk C', 'price' => 100000],
+            ]
+        ];
+
+        // Load view dan kirim data
+        $pdf = Pdf::loadView('pdf.invoice', $data);
+
+        // Return PDF sebagai response
+        return $pdf->stream('invoice.pdf');
+    }
+
     public function index(Request $request)
     {
         $query = Siswa::query();

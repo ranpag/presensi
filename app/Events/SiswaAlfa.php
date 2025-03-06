@@ -17,7 +17,6 @@ class SiswaAlfa implements ShouldBroadcast
 
     public function __construct($siswaAlfa)
     {
-        Log::info("Siswa yang Alfa: " . $siswaAlfa);
         $this->siswaAlfa = $siswaAlfa;
     }
 
