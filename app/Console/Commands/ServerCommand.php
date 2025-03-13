@@ -34,10 +34,11 @@ class ServerCommand extends Command
         $this->closureCommand->warn("\nPress Ctrl + C to stop all processes.");
 
         // Tangani Ctrl + C untuk menghentikan semua proses dengan aman
-        pcntl_signal(SIGINT, function () {
+        register_shutdown_function(function () {
+            echo "Skrip dihentikan, membersihkan semua proses...\n";
             $this->stopAllProcesses();
-            exit(0);
         });
+        
 
         // Loop utama untuk memantau proses
         while (true) {
