@@ -13,6 +13,7 @@ class ServerCommand extends Command
     protected ?Process $serveProcess = null;
     protected ?Process $reverbProcess = null;
     protected ?Process $queueProcess = null;
+    protected ?Process $scheduleProcess = null;
 
     protected $closureCommand = null;
 
@@ -30,6 +31,9 @@ class ServerCommand extends Command
 
         $this->closureCommand->info("Starting Queue Worker...");
         $this->queueProcess = $this->startProcess(['php', 'artisan', 'queue:work'], 'Queue Worker');
+
+        $this->closureCommand->info("Starting Schedule Worker...");
+        $this->scheduleProcess = $this->startProcess(['php', 'artisan', 'schedule:work'], 'Queue Worker');
 
         $this->closureCommand->warn("\nPress Ctrl + C to stop all processes.");
 
@@ -89,6 +93,7 @@ class ServerCommand extends Command
         $this->stopProcess($this->queueProcess);
         $this->stopProcess($this->reverbProcess);
         $this->stopProcess($this->serveProcess);
+        $this->stopProcess($this->scheduleProcess);
         $this->closureCommand->info("\nAll processes stopped.");
     }
 }

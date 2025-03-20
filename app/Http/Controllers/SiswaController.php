@@ -30,7 +30,7 @@ class SiswaController extends Controller
     {
         $user_id = auth('api')->id();
 
-        $siswa = Siswa::with(['kelas', 'stackAlfaMapel' => function ($query) {
+        $siswa = Siswa::with(['kelas.walas', 'stackAlfaMapel' => function ($query) {
             $query->where('stack_alfa', '>=', 3);
         }])->whereHas('kelas', function ($query) use ($user_id) {
             $query->where('user_id', $user_id);
@@ -48,23 +48,49 @@ class SiswaController extends Controller
         ]);
     }
 
-    public function buat_surat_siswa()
+    public function buat_surat_siswa(Request $request,$id)
     {
-        $data = [
-            'title' => 'Laporan Penjualan',
-            'date' => now()->format('d-m-Y'),
-            'items' => [
-                ['name' => 'Produk A', 'price' => 1000],
-                ['name' => 'Produk B', 'price' => 75000],
-                ['name' => 'Produk C', 'price' => 100000],
-            ]
-        ];
+        $tipe = $request->query('tipe');
 
-        // Load view dan kirim data
-        $pdf = Pdf::loadView('pdf.invoice', $data);
+        if (!$tipe || $tipe === '') {      
+            return response()->json([
+                'success' => false,
+                'message' => 'Gunakan query tipe.',
+                'errors' => [
+                    'tipe' => 'Gunakan query tipe antara: 3hari | 3mapel.',
+                ],
+            ], 404);
+        }
 
-        // Return PDF sebagai response
-        return $pdf->stream('invoice.pdf');
+        $siswa = Siswa::with(['kelas.walas', 'stackAlfaMapel' => function ($query) {
+                    $query->where('stack_alfa', '>=', 3);
+                }])
+                ->where(function ($query) use ($id) {
+                    $query->where('id', $id)
+                        ->where('stack_alfa_hari', '>=', 3)
+                        ->orWhereHas('stackAlfaMapel', function ($query) {
+                            $query->where('stack_alfa', '>=', 3);
+                        });
+                })
+                ->first(); 
+
+        if (!$siswa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data siswa tidak ditemukan.',
+            ], 404);
+        }
+        
+        if ($tipe === '3hari') {
+            $pdf = Pdf::loadView('pdf.3hari', ['siswa' => $siswa]);
+        }
+
+        if ($tipe === '3mapel') {      
+            $pdf = Pdf::loadView('pdf.3mapel', ['siswa' => $siswa]);
+        }
+        
+        $namaFile = 'SURAT_SANKSI_SISWA_' . preg_replace('/[^A-Za-z0-9_]/', '_', $siswa->nama) . '.pdf';
+        return $pdf->stream($namaFile);
     }
 
     public function index(Request $request)

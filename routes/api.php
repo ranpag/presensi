@@ -12,6 +12,8 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TanggalMerahController;
 use App\Http\Controllers\UserController;
 
+Route::get('/siswa/{id}/sanksi/surat', [SiswaController::class, 'buat_surat_siswa']);
+
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth.api');
@@ -63,7 +65,8 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/kelas', [SiswaController::class, 'siswa_kelas_saya']); // Siswa sesuai wali kelas
         Route::get('/kelas/terperingat', [SiswaController::class, 'siswa_kelas_terperingat']); // Siswa sesuai wali kelas dan yang stack alfanya lebih dari 3
         Route::get('/{id}', [SiswaController::class, 'show']);
-        Route::get('/{id}/surat/sanksi', [SiswaController::class, 'buat_surat_siswa']); // Siswa yang akan di download suratnya
+         // Siswa yang akan di download suratnya
+        Route::get('/{id}/sanksi/selesai', [SiswaController::class, 'buat_surat_siswa']); // Siswa akan tereset stack alfanya
     
         Route::middleware('admin')->group(function () {
             Route::post('/', [SiswaController::class, 'store']);
