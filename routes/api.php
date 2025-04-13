@@ -1,16 +1,17 @@
 <?php
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\JadwalController;
-use App\Http\Controllers\JadwalKBMController;
-use App\Http\Controllers\JadwalPiketController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\MapelController;
-use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\JadwalController;
+use App\Http\Controllers\PresensiController;
+use App\Http\Controllers\JadwalKBMController;
+use App\Http\Controllers\JadwalPiketController;
 use App\Http\Controllers\TanggalMerahController;
-use App\Http\Controllers\UserController;
 
 Route::get('/siswa/{id}/sanksi/surat', [SiswaController::class, 'buat_surat_siswa']);
 
@@ -126,11 +127,13 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/saat-ini', [PresensiController::class, 'saat_ini']);
         Route::get('/hari-ini', [PresensiController::class, 'hari_ini']);
         Route::get('/alfa', [PresensiController::class, 'alfa']);
-        // Route::get('/rekap', [PresensiController::class, 'hari_ini']);
-
+        Route::get('/rekap/kelas/{id}', [PresensiController::class, 'rekap_kelas']);
+        Route::get('/rekap/siswa/{id}', [PresensiController::class, 'rekap_siswa']);
+        Route::get('/download/template/kosong/kelas/{id}', [PresensiController::class, 'presensi_kosong_download']);
+        
         Route::get('/', [PresensiController::class, 'index']);
         Route::get('/{id}', [PresensiController::class, 'show']);
-
+        
         Route::post('/', [PresensiController::class, 'store']);
         
         Route::middleware('admin')->group(function () {

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\Presensi;
 use App\Events\SiswaAlfa;
+use App\Models\JadwalKBM;
 use Illuminate\Http\Request;
 use App\Models\SiswaMapelStack;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\PresensiService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +19,148 @@ use App\Http\Requests\Presensi\UpdatePresensiRequest;
 
 class PresensiController extends Controller
 {
-    public function saat_ini(Request $request)
+    public function rekap_siswa($id)
+    {
+        $presensi = Presensi::where('siswa_id', $id)
+            ->orderBy('tanggal')
+            ->get()
+            ->groupBy(function ($item) {
+                $tanggalCarbon = Carbon::parse($item->tanggal);
+                return $tanggalCarbon->toDateString();
+            });
+
+        $totalAlfa = 0;
+        $totalSakit = 0;
+        $totalIzin = 0;
+
+        foreach ($presensi as $tanggal => $dataPresensiHarian) {
+            $jumlah = $dataPresensiHarian->count();
+            $jumlahAlfa = $dataPresensiHarian->where('kehadiran', 'Alfa')->count();
+
+            if ($jumlahAlfa === $jumlah) {
+                // Semua Alfa
+                $totalAlfa += 1;
+            } elseif ($jumlahAlfa > 0) {
+                // Sebagian Alfa
+                $totalAlfa += round($jumlahAlfa / $jumlah, 2); // desimal 2 digit
+            }
+        }
+
+        foreach ($presensi as $tanggal => $dataPresensiHarian) {
+            $jumlah = $dataPresensiHarian->count();
+            $jumlahSakit = $dataPresensiHarian->where('kehadiran', 'Sakit')->count();
+
+            if ($jumlahSakit === $jumlah) {
+                // Semua Alfa
+                $totalSakit += 1;
+            } elseif ($jumlahSakit > 0) {
+                // Sebagian Alfa
+                $totalSakit += round($jumlahSakit / $jumlah, 2); // desimal 2 digit
+            }
+        }
+
+        foreach ($presensi as $tanggal => $dataPresensiHarian) {
+            $jumlah = $dataPresensiHarian->count();
+            $jumlahIzin = $dataPresensiHarian->where('kehadiran', 'Sakit')->count();
+
+            if ($jumlahIzin === $jumlah) {
+                // Semua Alfa
+                $totalIzin += 1;
+            } elseif ($jumlahIzin > 0) {
+                // Sebagian Alfa
+                $totalIzin += round($jumlahIzin / $jumlah, 2); // desimal 2 digit
+            }
+        }
+
+        $siswa = Siswa::with(["kelas"])->find($id);
+
+        $pdf = PDF::loadView('pdf.rekap_siswa', [
+            'siswa' => $siswa,
+            'total_alfa' => $totalAlfa,
+            'total_sakit' => $totalSakit,
+            'total_izin' => $totalIzin,
+        ])->setPaper('A4', 'potrait');
+
+        return $pdf->stream("rekap-" . str_replace(" ", "-", $siswa->nama) . ".pdf");
+    }
+
+
+    public function rekap_kelas(Request $request, $id)
+    {
+        if (!$request->filled('dari')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Query ?dari=YYYY-MM-DD harus diisi.',
+            ], 400);
+        }
+
+        $kelas = Kelas::with(['siswa', 'walas'])->findOrFail($id);
+
+        // Ambil tanggal "dari" dan set ke hari Senin minggu itu
+        $dari = Carbon::parse($request->input('dari'))->startOfWeek(Carbon::MONDAY);
+
+        // Tentukan "sampai" = Sabtu minggu yang sama
+        $sampai = (clone $dari)->addDays(5);
+
+        $presensi = Presensi::where('kelas_id', $id)
+            ->whereBetween('tanggal', [$dari->copy()->startOfDay(), $sampai->copy()->endOfDay()])
+            ->get();
+
+        $jadwalKBM = JadwalKBM::where('kelas_id', $id)
+            ->with(['mapel', 'guru'])
+            ->orderByRaw("FIELD(hari, 'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu')")
+            ->orderBy('mulai')
+            ->get()
+            ->groupBy('hari');
+
+        $pdf = PDF::loadView('pdf.rekap-harian', [
+            'kelas' => $kelas,
+            'presensi' => $presensi,
+            'jadwalPerHari' => $jadwalKBM,
+        ])->setPaper('A2', 'landscape');
+
+        return $pdf->stream("rekap-{$kelas->nama}-$dari-$sampai.pdf");
+    }
+
+    public function presensi_kosong_download($id)
+    {
+        $kelas = Kelas::with(['siswa', 'walas'])->find($id);
+
+        if (!$kelas) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data kelas tidak ditemukan.',
+            ], 404);
+        }
+
+        $jadwalKBM = JadwalKBM::where('kelas_id', $id)
+            ->with(['mapel', 'guru'])
+            ->orderByRaw("FIELD(hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu')")
+            ->orderBy('mulai', 'asc')
+            ->get();
+
+        $hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        $jadwalPerHari = [];
+
+        foreach ($hariList as $hari) {
+            $jadwalPerHari[$hari] = $jadwalKBM->where('hari', $hari)->values();
+        }
+
+        $data = [
+            'kelas' => $kelas,
+            'siswa' => $kelas->siswa,
+            'walas' => $kelas->walas,
+            'jadwalPerHari' => $jadwalPerHari,
+            'hariList' => $hariList
+        ];
+
+        $pdf = Pdf::loadView('pdf.presensi_kosong', $data)->setPaper('A2', 'landscape');
+
+        return $pdf->stream('presensi-kelas-'.$kelas->nama.'.pdf');
+    }
+
+
+    public function saat_ini()
     {
         $user_id = auth('api')->id();
         $presensiSaatIni = PresensiService::getPresensiSaatIni($user_id);
@@ -28,7 +172,7 @@ class PresensiController extends Controller
         ]);
     }
 
-    public function hari_ini(Request $request)
+    public function hari_ini()
     {
         $user_id = auth('api')->id();
         $presensiHariIni = PresensiService::getPresensiHariIni($user_id);
