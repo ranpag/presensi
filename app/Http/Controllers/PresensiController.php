@@ -113,7 +113,7 @@ class PresensiController extends Controller
             ->get()
             ->groupBy('hari');
 
-        $pdf = PDF::loadView('pdf.rekap-harian', [
+        $pdf = PDF::loadView('pdf.rekap_kelas', [
             'kelas' => $kelas,
             'presensi' => $presensi,
             'jadwalPerHari' => $jadwalKBM,
