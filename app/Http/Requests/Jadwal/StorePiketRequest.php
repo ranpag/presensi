@@ -19,7 +19,7 @@ class StorePiketRequest extends FormRequest
             'user_id' => 'nullable|exists:users,id',
             'mulai' => 'required|date_format:H:i',
             'selesai' => 'required|date_format:H:i|after:mulai',
-            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
+            'tanggal' => 'required|date',
         ];
     }
 
@@ -35,8 +35,8 @@ class StorePiketRequest extends FormRequest
             'selesai.date_format' => 'Format waktu selesai harus HH:MM (contoh: 16:00).',
             'selesai.after' => 'Waktu selesai harus setelah waktu mulai.',
 
-            'hari.required' => 'Hari wajib dipilih.',
-            'hari.in' => 'Hari harus salah satu dari: Senin, Selasa, Rabu, Kamis, Jumat, Sabtu.',
+            'tanggal.required' => 'Tanggal wajib dipilih.',
+            'tanggal.in' => 'Tanggal harus dalam format tanggal yang valid.',
         ];
     }
 

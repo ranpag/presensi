@@ -95,8 +95,9 @@ Route::middleware('auth.api')->group(function () {
     Route::prefix('jadwal')->group(function () {
         Route::get('/hari-ini', [JadwalController::class, 'hari']);
         Route::get('/minggu-ini', [JadwalController::class, 'minggu']);
-
+        
         Route::prefix('kbm')->group(function () {
+            Route::get('/download/kelas/{id}', [JadwalController::class, 'download_jadwal_kbm']);
             Route::get('/', [JadwalKBMController::class, 'index']);
             Route::get('/{id}', [JadwalKBMController::class, 'show']);
     
@@ -110,6 +111,7 @@ Route::middleware('auth.api')->group(function () {
         });
     
         Route::prefix('piket')->group(function () {
+            Route::get('/download/user/{id}', [JadwalController::class, 'download_jadwal_piket']);
             Route::get('/', [JadwalPiketController::class, 'index']);
             Route::get('/{id}', [JadwalPiketController::class, 'show']);
     

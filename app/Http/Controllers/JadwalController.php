@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JadwalKBM;
 use App\Models\JadwalPiket;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class JadwalController extends Controller
 {
@@ -105,4 +106,49 @@ class JadwalController extends Controller
             ]
         ]);
     }
+
+    public function download_jadwal_kbm($id)
+    {
+        $jadwalKBM = JadwalKBM::with(['kelas.walas:id,nama', 'mapel', 'kelas'])
+            ->where('kelas_id', $id)
+            ->orderByRaw("FIELD(hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu')")
+            ->orderBy('mulai', 'asc')
+            ->get();
+
+        $resultKbm = [];
+        foreach ($jadwalKBM as $jadwal) {
+            $hari = $jadwal->hari;
+            $resultKbm[$hari][] = [
+                'id' => $jadwal->id,
+                'kelas' => $jadwal->kelas,
+                'mapel' => $jadwal->mapel,
+                'mulai' => $jadwal->mulai,
+                'selesai' => $jadwal->selesai
+            ];
+        }
+
+        $kelas = $jadwalKBM->first()?->kelas;
+
+        $pdf = Pdf::loadView('pdf.jadwal_kbm', [
+            'jadwal' => $resultKbm,
+            'kelas' => $kelas
+        ]);
+
+        return $pdf->download('jadwal-kbm-kelas-' . $kelas->nama . '.pdf');
+    }
+
+    public function download_jadwal_piket($id)
+    {
+        $jadwalPiket = JadwalPiket::with('guru')
+            ->where('user_id', $id)
+            ->orderBy('tanggal')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.jadwal_piket', [
+            'jadwal' => $jadwalPiket,
+        ]);
+
+        return $pdf->download('jadwal-piket-user-' . $id . '.pdf');
+    }
+
 }

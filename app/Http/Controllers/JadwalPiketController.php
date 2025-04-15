@@ -34,7 +34,7 @@ class JadwalPiketController extends Controller
             'user_id' => $request->user_id,
             'mulai' => $request->mulai,
             'selesai' => $request->selesai,
-            'hari' => $request->hari,
+            'tanggal' => $request->tanggal,
         ]);
 
         return response()->json([
@@ -77,7 +77,7 @@ class JadwalPiketController extends Controller
             'user_id' => $request->user_id !== $jadwalPiket->user_id ? $request->user_id : null,
             'mulai' => $request->mulai !== $jadwalPiket->mulai ? $request->mulai : null,
             'selesai' => $request->selesai !== $jadwalPiket->selesai ? $request->selesai : null,
-            'hari' => $request->hari !== $jadwalPiket->hari ? $request->hari : null,
+            'tanggal' => $request->tanggal !== $jadwalPiket->tanggal ? $request->tanggal : null,
         ], fn($value) => !is_null($value));
 
         if (empty($data)) {

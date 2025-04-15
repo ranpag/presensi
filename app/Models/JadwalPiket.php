@@ -16,7 +16,7 @@ class JadwalPiket extends Model
         'user_id',
         'mulai',
         'selesai',
-        'hari',
+        'tanggal',
     ];
 
     public function guru(): BelongsTo

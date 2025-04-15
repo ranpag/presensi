@@ -88,7 +88,7 @@ class DatabaseSeeder extends Seeder
 
         $jadwalPiket = [];
         for ($i = 0; $i < 6; $i++) {
-            $jadwalPiket[] = ['user_id' => $i + 1, 'hari' => $hari[$i], 'mulai' => '07:00:00', 'selesai' => '12:00:00'];
+            $jadwalPiket[] = ['user_id' => $i + 1, 'tanggal' => now(), 'mulai' => '07:00:00', 'selesai' => '12:00:00'];
         }
 
         DB::table('jadwal_piket')->insert($jadwalPiket);

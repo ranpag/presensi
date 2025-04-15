@@ -19,7 +19,7 @@ class UpdatePiketRequest extends FormRequest
             'user_id' => 'nullable|exists:users,id',
             'mulai' => 'date_format:H:i',
             'selesai' => 'date_format:H:i|after:mulai',
-            'hari' => 'in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
+            'tanggal' => 'date',
         ];
     }
 
@@ -33,7 +33,7 @@ class UpdatePiketRequest extends FormRequest
             'selesai.date_format' => 'Format waktu selesai harus HH:MM (contoh: 16:00).',
             'selesai.after' => 'Waktu selesai harus setelah waktu mulai.',
 
-            'hari.in' => 'Hari harus salah satu dari: Senin, Selasa, Rabu, Kamis, Jumat, Sabtu.',
+            'tanggal.in' => 'Hari harus dalam format tanggal yang valid.',
         ];
     }
 
