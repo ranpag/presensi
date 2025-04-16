@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -22,10 +23,14 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $user = User::with(["walas", "piket", "mapel"])
+            ->where($fieldType, $input)
+            ->first();
+
         return response()->json([
             'success' => true,
             'message' => 'Successfully logged in.',
-            'data' => auth('api')->user(),
+            'data' => $user,
             'access_token' => $token
         ]);
     }

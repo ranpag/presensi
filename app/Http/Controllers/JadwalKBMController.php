@@ -68,6 +68,21 @@ class JadwalKBMController extends Controller
 
     public function store(StoreKbmRequest $request)
     {
+        $jadwalBentrok = JadwalKBM::where('kelas_id', $request->kelas_id)
+            ->where('hari', $request->hari)
+            ->where(function ($q) use ($request) {
+                $q->where('mulai', '<', $request->selesai)
+                ->where('selesai', '>', $request->mulai);
+            })
+            ->exists();
+
+        if ($jadwalBentrok) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jadwal bentrok dengan jadwal yang sudah ada.'
+            ], 409);
+        }
+
         $jadwalKBMId = DB::table('jadwal_kbm')->insertGetId([
             'kelas_id' => $request->kelas_id,
             'mapel_id' => $request->mapel_id,
@@ -83,6 +98,7 @@ class JadwalKBMController extends Controller
             'data' => JadwalKBM::find($jadwalKBMId)
         ], 201);
     }
+
 
     public function show($id)
     {
@@ -111,6 +127,29 @@ class JadwalKBMController extends Controller
                 'success' => false,
                 'message' => 'Data jadwal KBM tidak ditemukan.',
             ], 404);
+        }
+
+        $kelas_id = $request->kelas_id ?? $jadwalKBM->kelas_id;
+        $hari = $request->hari ?? $jadwalKBM->hari;
+        $mulai = $request->mulai ?? $jadwalKBM->mulai;
+        $selesai = $request->selesai ?? $jadwalKBM->selesai;
+
+        if ($request->hasAny(['mulai', 'selesai', 'kelas_id', 'hari'])) {
+            $jadwalBentrok = JadwalKBM::where('kelas_id', $kelas_id)
+                ->where('hari', $hari)
+                ->where('id', '!=', $id)
+                ->where(function ($q) use ($mulai, $selesai) {
+                    $q->where('mulai', '<', $selesai)
+                    ->where('selesai', '>', $mulai);
+                })
+                ->exists();
+
+            if ($jadwalBentrok) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jadwal bentrok dengan jadwal yang sudah ada.'
+                ], 409);
+            }
         }
 
         $data = array_filter([

@@ -11,6 +11,27 @@ use App\Http\Requests\User\UpdateUserRequest;
 
 class UserController extends Controller
 {
+    public function hanya_guru(Request $request)
+    {
+        $query = User::query();
+
+        if ($request->has('search')) {
+            $query->where('nama', 'like', '%' . $request->search . '%')
+                  ->orWhere('username', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
+        }
+
+        $query->whereNot("role", "admin");
+
+        $users = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data guru berhasil diambil.',
+            'data' => $users
+        ]);
+    }
+
     public function index(Request $request)
     {
         $query = User::query();

@@ -17,22 +17,14 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        $users = [
-            [
-                'nama' => 'Admin User',
-                'username' => 'admin',
-                'email' => 'admin@example.com',
-                'password' => Hash::make('Admin$123'),
-                'role' => 'admin'
-            ]
-        ];
+        $users = [];
 
         for ($i = 1; $i <= 10; $i++) {
             $users[] = [
                 'nama' => "Guru $i",
                 'username' => "user$i",
                 'email' => "user$i@example.com",
-                'password' => Hash::make('User$123'),
+                'password' => Hash::make('user$123'),
                 'role' => 'user'
             ];
         }

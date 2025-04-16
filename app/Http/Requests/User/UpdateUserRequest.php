@@ -21,6 +21,7 @@ class UpdateUserRequest extends FormRequest
             'username' => 'string|max:50|unique:users,username,' . $this->route('id'),
             'email' => 'email|unique:users,email,' . $this->route('id'),
             'password' => [
+		'nullable',
                 'string',
                 Password::min(8)->letters()->numbers()->mixedCase()->symbols(),
             ],

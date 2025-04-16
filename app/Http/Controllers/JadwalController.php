@@ -134,7 +134,7 @@ class JadwalController extends Controller
             'kelas' => $kelas
         ]);
 
-        return $pdf->download('jadwal-kbm-kelas-' . $kelas->nama . '.pdf');
+        return $pdf->stream('jadwal-kbm-kelas-' . $kelas->nama . '.pdf');
     }
 
     public function download_jadwal_piket($id)
@@ -148,7 +148,7 @@ class JadwalController extends Controller
             'jadwal' => $jadwalPiket,
         ]);
 
-        return $pdf->download('jadwal-piket-user-' . $id . '.pdf');
+        return $pdf->stream('jadwal-piket-user-' . $id . '.pdf');
     }
 
 }

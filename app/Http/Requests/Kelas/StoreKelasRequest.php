@@ -18,7 +18,7 @@ class StoreKelasRequest extends FormRequest
         return [
             'nama' => 'required|string|max:50|unique:kelas,nama',
             'tingkatan' => 'required|in:7,8,9',
-            'user_id' => 'nullable|exists:users,id',
+            'user_id' => 'nullable|exists:users,id|unique:kelas,user_id',
         ];
     }
 

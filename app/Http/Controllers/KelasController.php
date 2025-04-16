@@ -31,6 +31,16 @@ class KelasController extends Controller
 
     public function store(StoreKelasRequest $request)
     {
+        $walasBentrok = Kelas::where('user_id', $request->user_id)
+            ->exists();
+
+        if ($walasBentrok) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Guru tersebut telah menjadi wali kelas di kelas yang lain.'
+            ], 409);
+        }
+
         $kelas = DB::table('kelas')->insertGetId([
             'nama' => $request->nama,
             'tingkatan' => $request->tingkatan,
@@ -107,6 +117,19 @@ class KelasController extends Controller
                 'success' => false,
                 'message' => 'Data kelas tidak ditemukan.',
             ], 404);
+        }
+
+        if ($request->has("user_id")) {
+            $walasBentrok = Kelas::where('user_id', $request->user_id)
+                ->where("id", "!=", $id)
+                ->exists();
+
+            if ($walasBentrok) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Guru tersebut telah menjadi wali kelas di kelas yang lain.'
+                ], 409);
+            }
         }
 
         $data = array_filter([

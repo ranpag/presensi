@@ -24,7 +24,7 @@ Artisan::command('presensi:run', function () {
 
 app(Schedule::class)->command('presensi:run')->dailyAt('05:30')->timezone('Asia/Jakarta');
 app(Schedule::class)->command('presensi:run')->dailyAt('06:00')->timezone('Asia/Jakarta');
-app(Schedule::class)->command('presensi:run')->dailyAt('06:36')->timezone('Asia/Jakarta');
+app(Schedule::class)->command('presensi:run')->dailyAt('06:30')->timezone('Asia/Jakarta');
 
 
 Artisan::command('srv', function () {

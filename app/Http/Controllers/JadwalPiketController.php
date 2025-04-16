@@ -30,6 +30,20 @@ class JadwalPiketController extends Controller
 
     public function store(StorePiketRequest $request)
     {
+        $jadwalBentrok = JadwalPiket::where('tanggal', $request->tanggal)
+            ->where(function ($q) use ($request) {
+                $q->where('mulai', '<', $request->selesai)
+                ->where('selesai', '>', $request->mulai);
+            })
+            ->exists();
+
+        if ($jadwalBentrok) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jadwal bentrok dengan jadwal yang sudah ada.'
+            ], 409);
+        }
+
         $jadwalPiketId = DB::table('jadwal_piket')->insertGetId([
             'user_id' => $request->user_id,
             'mulai' => $request->mulai,
@@ -71,6 +85,27 @@ class JadwalPiketController extends Controller
                 'success' => false,
                 'message' => 'Data jadwal piket tidak ditemukan.',
             ], 404);
+        }
+
+        $tanggal = $request->tanggal ?? $jadwalPiket->tanggal;
+        $mulai = $request->mulai ?? $jadwalPiket->mulai;
+        $selesai = $request->selesai ?? $jadwalPiket->selesai;
+
+        if ($request->hasAny(['mulai', 'selesai', 'tanggal'])) {
+            $jadwalBentrok = JadwalPiket::where('tanggal', $tanggal)
+                ->where('id', '!=', $id)
+                ->where(function ($q) use ($mulai, $selesai) {
+                    $q->where('mulai', '<', $selesai)
+                    ->where('selesai', '>', $mulai);
+                })
+                ->exists();
+
+            if ($jadwalBentrok) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jadwal bentrok dengan jadwal yang sudah ada.'
+                ], 409);
+            }
         }
 
         $data = array_filter([

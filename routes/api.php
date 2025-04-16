@@ -24,6 +24,7 @@ Route::prefix('auth')->group(function () {
 Route::middleware('auth.api')->group(function () {
     Route::prefix('user')->group(function () {
         Route::get('/', [UserController::class, 'index']);
+        Route::get('/hanya/guru', [UserController::class, 'hanya_guru']);
         Route::get('/{id}', [UserController::class, 'show']);
     
         Route::middleware('admin')->group(function () {
