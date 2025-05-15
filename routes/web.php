@@ -3,10 +3,19 @@
 use App\Models\Siswa;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\JadwalKBMController;
+use App\Http\Controllers\JadwalController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/jadwal/{id}', [JadwalKBMController::class, 'show']);
+
+
+Route::get('/pdf/jadwal-kbm/{id}', [JadwalController::class, 'show_kbm_html'])->name('jadwal.html');
+Route::get('/pdf/jadwal-piket/{id}', [JadwalController::class, 'show_piket_html'])->name('piket.html');
+
 
 Route::get('/pdf/3hari/{id}', function ($id) {
         $siswa = Siswa::with(['kelas.walas', 'stackAlfaMapel' => function ($query) {

@@ -1,17 +1,17 @@
 <?php
 
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\KelasController;
-use App\Http\Controllers\MapelController;
-use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\JadwalController;
-use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\JadwalKBMController;
 use App\Http\Controllers\JadwalPiketController;
+use App\Http\Controllers\KelasController;
+use App\Http\Controllers\MapelController;
+use App\Http\Controllers\PresensiController;
+use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\TanggalMerahController;
+use App\Http\Controllers\UserController;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/siswa/{id}/sanksi/surat', [SiswaController::class, 'buat_surat_siswa']);
 
@@ -26,7 +26,7 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::get('/hanya/guru', [UserController::class, 'hanya_guru']);
         Route::get('/{id}', [UserController::class, 'show']);
-    
+
         Route::middleware('admin')->group(function () {
             Route::post('/', [UserController::class, 'store']);
             Route::put('/{id}', [UserController::class, 'update']);
@@ -39,7 +39,7 @@ Route::middleware('auth.api')->group(function () {
     Route::prefix('mapel')->group(function () {
         Route::get('/', [MapelController::class, 'index']);
         Route::get('/{id}', [MapelController::class, 'show']);
-    
+
         Route::middleware('admin')->group(function () {
             Route::post('/', [MapelController::class, 'store']);
             Route::put('/{id}', [MapelController::class, 'update']);
@@ -48,11 +48,11 @@ Route::middleware('auth.api')->group(function () {
             Route::delete('/{id}', [MapelController::class, 'destroy']);
         });
     });
-    
+
     Route::prefix('kelas')->group(function () {
         Route::get('/', [KelasController::class, 'index']);
         Route::get('/{id}', [KelasController::class, 'show']);
-    
+
         Route::middleware('admin')->group(function () {
             Route::post('/', [KelasController::class, 'store']);
             Route::put('/{id}', [KelasController::class, 'update']);
@@ -61,15 +61,15 @@ Route::middleware('auth.api')->group(function () {
             Route::delete('/{id}', [KelasController::class, 'destroy']);
         });
     });
-    
+
     Route::prefix('siswa')->group(function () {
         Route::get('/', [SiswaController::class, 'index']);
-        Route::get('/kelas', [SiswaController::class, 'siswa_kelas_saya']); // Siswa sesuai wali kelas
-        Route::get('/kelas/terperingat', [SiswaController::class, 'siswa_kelas_terperingat']); // Siswa sesuai wali kelas dan yang stack alfanya lebih dari 3
+        Route::get('/kelas', [SiswaController::class, 'siswa_kelas_saya']);  // Siswa sesuai wali kelas
+        Route::get('/kelas/terperingat', [SiswaController::class, 'siswa_kelas_terperingat']);  // Siswa sesuai wali kelas dan yang stack alfanya lebih dari 3
         Route::get('/{id}', [SiswaController::class, 'show']);
-         // Siswa yang akan di download suratnya
-        Route::get('/{id}/sanksi/selesai', [SiswaController::class, 'buat_surat_siswa']); // Siswa akan tereset stack alfanya
-    
+        // Siswa yang akan di download suratnya
+        Route::get('/{id}/sanksi/selesai', [SiswaController::class, 'buat_surat_siswa']);  // Siswa akan tereset stack alfanya
+
         Route::middleware('admin')->group(function () {
             Route::post('/', [SiswaController::class, 'store']);
             Route::put('/{id}', [SiswaController::class, 'update']);
@@ -82,7 +82,7 @@ Route::middleware('auth.api')->group(function () {
     Route::prefix('tanggal-merah')->group(function () {
         Route::get('/', [TanggalMerahController::class, 'index']);
         Route::get('/{id}', [TanggalMerahController::class, 'show']);
-    
+
         Route::middleware('admin')->group(function () {
             Route::post('/', [TanggalMerahController::class, 'store']);
             Route::put('/{id}', [TanggalMerahController::class, 'update']);
@@ -91,36 +91,35 @@ Route::middleware('auth.api')->group(function () {
             Route::delete('/{id}', [TanggalMerahController::class, 'destroy']);
         });
     });
-    
-    
+
     Route::prefix('jadwal')->group(function () {
         Route::get('/hari-ini', [JadwalController::class, 'hari']);
         Route::get('/minggu-ini', [JadwalController::class, 'minggu']);
-        
+
         Route::prefix('kbm')->group(function () {
             Route::get('/download/kelas/{id}', [JadwalController::class, 'download_jadwal_kbm']);
             Route::get('/', [JadwalKBMController::class, 'index']);
             Route::get('/{id}', [JadwalKBMController::class, 'show']);
-    
+
             Route::middleware('admin')->group(function () {
                 Route::post('/', [JadwalKBMController::class, 'store']);
                 Route::put('/{id}', [JadwalKBMController::class, 'update']);
                 Route::patch('/{id}', [JadwalKBMController::class, 'update']);
-                Route::delete('/destroy/many', [JadwalKBMController::class, 'destroyMany']);        
+                Route::delete('/destroy/many', [JadwalKBMController::class, 'destroyMany']);
                 Route::delete('/{id}', [JadwalKBMController::class, 'destroy']);
             });
         });
-    
+
         Route::prefix('piket')->group(function () {
             Route::get('/download/user/{id}', [JadwalController::class, 'download_jadwal_piket']);
             Route::get('/', [JadwalPiketController::class, 'index']);
             Route::get('/{id}', [JadwalPiketController::class, 'show']);
-    
+
             Route::middleware('admin')->group(function () {
                 Route::post('/', [JadwalPiketController::class, 'store']);
                 Route::put('/{id}', [JadwalPiketController::class, 'update']);
                 Route::patch('/{id}', [JadwalPiketController::class, 'update']);
-                Route::delete('/destroy/many', [JadwalPiketController::class, 'destroyMany']);        
+                Route::delete('/destroy/many', [JadwalPiketController::class, 'destroyMany']);
                 Route::delete('/{id}', [JadwalPiketController::class, 'destroy']);
             });
         });
@@ -133,12 +132,12 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/rekap/kelas/{id}', [PresensiController::class, 'rekap_kelas']);
         Route::get('/rekap/siswa/{id}', [PresensiController::class, 'rekap_siswa']);
         Route::get('/download/template/kosong/kelas/{id}', [PresensiController::class, 'presensi_kosong_download']);
-        
+
         Route::get('/', [PresensiController::class, 'index']);
         Route::get('/{id}', [PresensiController::class, 'show']);
-        
+
         Route::post('/', [PresensiController::class, 'store']);
-        
+
         Route::middleware('admin')->group(function () {
             Route::patch('/{id}', [PresensiController::class, 'update']);
             Route::put('/{id}', [PresensiController::class, 'update']);

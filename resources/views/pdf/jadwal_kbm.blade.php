@@ -4,72 +4,91 @@
     <meta charset="UTF-8">
     <title>Jadwal KBM</title>
     <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: sans-serif;
             font-size: 12px;
+            margin: 0 auto;
+            padding: 1cm;
+            box-sizing: border-box;
         }
-        h2 {
-            margin-bottom: 0;
-        }
-        .info {
-            margin-bottom: 20px;
-        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
+            margin-top: 20px;
+            font-size: 11px;
+            page-break-inside: auto;
         }
-        th, td {
+
+        tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+}
+
+        td, th {
             border: 1px solid #000;
-            padding: 5px;
-            word-wrap: break-word;
+            padding: 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .title {
+            margin-bottom: 20px;
+            margin-top: 30px;
             text-align: center;
+            font-size: 16px;
         }
-        .jadwal-item {
-            margin-bottom: 10px;
+
+        .section-title {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            padding: 4px;
         }
+
     </style>
 </head>
 <body>
-
-    <div class="info">
-        <h2>Info Kelas</h2>
-        <p><strong>Kelas:</strong> {{ $kelas->nama }}</p>
+<div style="width: 100%; text-align: center;">
+    <div style="display: inline-block; text-align: left;">
+    <div class="title">
+        <p><strong>Jadwal Pelajaran Kelas {{ $kelas->nama }}</strong></p>
+    </div>
+    <div>
         <p><strong>Wali Kelas:</strong> {{ $kelas->walas->nama }}</p>
     </div>
 
-    <h2>Jadwal KBM</h2>
-
-    <table>
-        <thead>
-            <tr>
-                @foreach ($jadwal as $hari => $items)
-                    <th>{{ $hari }}</th>
-                @endforeach
-            </tr>
-        </thead>
-        <tbody>
-            @php
-                $maxRows = max(array_map(fn($item) => count($item), $jadwal));
-            @endphp
-
-            @for ($i = 0; $i < $maxRows; $i++)
+    
+        <table>
+        @foreach ($jadwal as $hari => $items)
                 <tr>
-                    @foreach ($jadwal as $hari => $items)
-                        <td>
-                            @if (isset($items[$i]))
-                                <div class="jadwal-item">
-                                    <strong>{{ $items[$i]['mapel']->nama }}</strong><br>
-                                    {{ \Carbon\Carbon::parse($items[$i]['mulai'])->format('H:i') }} - 
-                                    {{ \Carbon\Carbon::parse($items[$i]['selesai'])->format('H:i') }}
-                                </div>
-                            @endif
-                        </td>
+                <th rowspan="3" class="section-title" style="text-align: center; vertical-align: middle;">{{ $hari }}</th>
+                    <td>Jam</td>
+                    @foreach ($items as $index => $item)
+                    <td>{{ \Carbon\Carbon::parse($item['mulai'])->format('H:i') }} - {{ \Carbon\Carbon::parse($item['selesai'])->format('H:i') }}</td>
                     @endforeach
                 </tr>
-            @endfor
-        </tbody>
-    </table>
+                <tr>
+                    <td>Mapel</td>
+                    @foreach ($items as $index => $item)
+                    <td>{{ $item['mapel']->nama }}</td>
+                    @endforeach
+                </tr>
+                <tr>
+                    <td>Guru</td>
+                    @foreach ($items as $index => $item)
+                    <td>{{ $item['guru']->nama }}</td>
+                    @endforeach
+                </tr>
+                @endforeach
+        </table>
+    </div>
+</div>
+    
 
 </body>
 </html>
