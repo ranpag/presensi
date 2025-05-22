@@ -24,11 +24,17 @@ class DatabaseSeeder extends Seeder
                 'nama' => "Guru $i",
                 'username' => "user$i",
                 'email' => "user$i@example.com",
-                'password' => Hash::make('user$123'),
+                'password' => Hash::make('User$123'),
                 'role' => 'user'
             ];
         }
-
+        DB::table('users')->insert([
+            'nama' => "admin",
+            'username' => "admin",
+            'email' => "admin@example.com",
+            'password' => Hash::make('Admin$123'),
+            'role' => 'admin'
+        ]);
         DB::table('users')->insert($users);
 
         DB::table('mapel')->insert([
