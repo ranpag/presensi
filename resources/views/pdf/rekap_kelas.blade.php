@@ -4,26 +4,31 @@
     <meta charset="utf-8">
     <title>Rekap Presensi Per Hari</title>
     <style>
-        body {
-            font-family: sans-serif;
-            font-size: 10px;
-        }
+        body { font-family: sans-serif; font-size: 10px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #000; padding: 4px; text-align: center; }
+    .text-left { text-align: left; }
+    .header-row { background-color: #ddd; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
+    /* Kurangi padding dan font size khusus kolom mapel dan baris kedua header */
+    .header-row.second th {
+        padding: 2px 3px;
+        font-size: 8px;
+        line-height: 1;
+    }
 
-        th, td {
-            border: 1px solid #000;
-            padding: 4px;
-            text-align: center;
-        }
+    /* Kolom mapel di body juga padding kecil dan font kecil */
+    tbody td.small-cell {
+        padding: 2px 3px;
+        font-size: 8px;
+    }
 
-        th {
-            background-color: #eee;
-        }
+    small {
+        font-size: 7px;
+        display: block;
+        margin-top: 1px;
+        line-height: 1;
+    }
     </style>
 </head>
 <body>
@@ -32,7 +37,7 @@
 
     <table>
         <thead>
-            <tr>
+            <tr class="header-row">
                 <th rowspan="3">No</th>
                 <th rowspan="3">NIS</th>
                 <th rowspan="3">Nama Siswa</th>
@@ -40,14 +45,7 @@
                     <th colspan="{{ count($jadwals) }}">{{ $hari }}</th>
                 @endforeach
             </tr>
-            <tr>
-                @foreach($jadwalPerHari as $jadwals)
-                    @foreach($jadwals as $jadwal)
-                        <th>{{ $jadwal->guru->nama }}</th>
-                    @endforeach
-                @endforeach
-            </tr>
-            <tr>
+            <tr class="header-row second">
                 @foreach($jadwalPerHari as $jadwals)
                     @foreach($jadwals as $jadwal)
                         <th>
